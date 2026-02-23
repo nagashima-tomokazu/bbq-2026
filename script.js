@@ -1,174 +1,52 @@
 /* ========================================
-   BBQ 2026 - Google Sheets Integration
+   BBQ 2026 - Password Gate & UI
    ======================================== */
 
-// ============ CONFIG ============
-// Google Spreadsheet ID (URLの /d/ と /edit の間の部分)
-const SHEET_ID = '1EpZ8VKSUcbzEaZX85rJaM_I78INISpz9u-62EtKX4Ow';
-
-// シート名（Googleスプレッドシートのタブ名と一致させる）
-const SHEETS = {
-    members:    { name: '参加者',       tableId: 'members-table',    linkId: 'members-edit-link',    gid: '0' },
-    potluck:    { name: '持ち寄り',     tableId: 'potluck-table',    linkId: 'potluck-edit-link',    gid: '357540464' },
-    shopping:   { name: '買い出し',     tableId: 'shopping-table',   linkId: 'shopping-edit-link',   gid: '2034131953' },
-    supplies:   { name: '用意するもの', tableId: 'supplies-table',   linkId: 'supplies-edit-link',   gid: '2010623614' },
-    accounting: { name: '会計',         tableId: 'accounting-table', linkId: 'accounting-edit-link', gid: '1746162616' },
-};
-// ================================
+// SHA-256 hash of the password (password itself is NOT stored)
+const PASSWORD_HASH = '8d12acea74abf594f96f7b5dfdb77a6c9df91d0a372653a8891ca0ba84050765';
 
 /**
- * Google SheetsからCSVデータを取得する
+ * SHA-256ハッシュを計算する (Web Crypto API)
  */
-async function fetchSheetData(sheetName) {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
-
-    const response = await fetch(url);
-    if (!response.ok) {
-        throw new Error(`Failed to fetch: ${response.status}`);
-    }
-
-    const csv = await response.text();
-    return parseCSV(csv);
+async function sha256(text) {
+    const data = new TextEncoder().encode(text);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 /**
- * CSVをパースして配列の配列にする
+ * パスワードゲートの初期化
  */
-function parseCSV(csv) {
-    const rows = [];
-    let current = '';
-    let inQuotes = false;
-    let row = [];
+function setupPasswordGate() {
+    const gate = document.getElementById('pw-gate');
+    if (!gate) return;
 
-    for (let i = 0; i < csv.length; i++) {
-        const char = csv[i];
-
-        if (inQuotes) {
-            if (char === '"' && csv[i + 1] === '"') {
-                current += '"';
-                i++;
-            } else if (char === '"') {
-                inQuotes = false;
-            } else {
-                current += char;
-            }
-        } else {
-            if (char === '"') {
-                inQuotes = true;
-            } else if (char === ',') {
-                row.push(current.trim());
-                current = '';
-            } else if (char === '\n' || (char === '\r' && csv[i + 1] === '\n')) {
-                row.push(current.trim());
-                current = '';
-                if (row.some(cell => cell !== '')) {
-                    rows.push(row);
-                }
-                row = [];
-                if (char === '\r') i++;
-            } else {
-                current += char;
-            }
-        }
-    }
-
-    if (current !== '' || row.length > 0) {
-        row.push(current.trim());
-        if (row.some(cell => cell !== '')) {
-            rows.push(row);
-        }
-    }
-
-    return rows;
-}
-
-/**
- * テーブルにデータを描画する
- */
-function renderTable(tableId, data) {
-    const table = document.getElementById(tableId);
-    if (!table) return;
-    const tbody = table.querySelector('tbody');
-    const headerRow = table.querySelector('thead tr');
-    const colCount = headerRow ? headerRow.children.length : 3;
-
-    const dataRows = data.slice(1);
-
-    if (dataRows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="${colCount}" class="no-data">まだデータがありません</td></tr>`;
+    // 認証済みならゲートを即削除
+    if (sessionStorage.getItem('bbq2026_auth') === 'true') {
+        gate.remove();
         return;
     }
 
-    tbody.innerHTML = '';
+    const form = document.getElementById('pw-form');
+    const input = document.getElementById('pw-input');
+    const error = document.getElementById('pw-error');
 
-    dataRows.forEach(row => {
-        const tr = document.createElement('tr');
-        for (let i = 0; i < colCount; i++) {
-            const td = document.createElement('td');
-            const val = row[i] || '';
-            td.textContent = val;
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const hash = await sha256(input.value);
 
-            // Status styling
-            if (val === '完了' || val === '済') {
-                td.classList.add('status-done');
-            } else if (val === '未着手' || val === '未') {
-                td.classList.add('status-pending');
-            } else if (val === '参加' || val === 'OK') {
-                td.classList.add('status-ok');
-            } else if (val === '不参加' || val === 'NG') {
-                td.classList.add('status-ng');
-            }
-
-            tr.appendChild(td);
-        }
-        tbody.appendChild(tr);
-    });
-
-    return dataRows;
-}
-
-/**
- * 会計の合計を計算して表示する
- */
-function renderAccountingTotal(data) {
-    const dataRows = data.slice(1);
-    let total = 0;
-
-    dataRows.forEach(row => {
-        const amount = parseInt((row[1] || '0').replace(/[^0-9]/g, ''), 10);
-        if (!isNaN(amount)) total += amount;
-    });
-
-    const totalBox = document.getElementById('accounting-total');
-    const totalAmount = document.getElementById('total-amount');
-    if (totalBox && totalAmount && total > 0) {
-        totalAmount.textContent = total.toLocaleString();
-        totalBox.style.display = 'block';
-    }
-}
-
-/**
- * スプレッドシート編集リンクを設定する
- */
-function setupEditLinks() {
-    Object.values(SHEETS).forEach(sheet => {
-        const link = document.getElementById(sheet.linkId);
-        if (link) {
-            link.href = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit#gid=${sheet.gid}`;
+        if (hash === PASSWORD_HASH) {
+            sessionStorage.setItem('bbq2026_auth', 'true');
+            gate.classList.add('unlocked');
+            setTimeout(() => gate.remove(), 600);
+        } else {
+            error.textContent = 'パスワードが違います';
+            input.classList.add('shake');
+            input.value = '';
+            setTimeout(() => input.classList.remove('shake'), 500);
         }
     });
-}
-
-/**
- * エラーメッセージをテーブルに表示
- */
-function showError(tableId, message) {
-    const table = document.getElementById(tableId);
-    if (!table) return;
-    const tbody = table.querySelector('tbody');
-    const headerRow = table.querySelector('thead tr');
-    const colCount = headerRow ? headerRow.children.length : 3;
-    tbody.innerHTML = `<tr><td colspan="${colCount}" class="no-data">${message}</td></tr>`;
 }
 
 /**
@@ -185,7 +63,6 @@ function setupNav() {
         });
     });
 
-    // Highlight active nav on scroll
     const sections = document.querySelectorAll('section[id]');
     const navLinks = document.querySelectorAll('.nav a');
 
@@ -207,35 +84,26 @@ function setupNav() {
 }
 
 /**
- * 初期化
+ * Scroll-triggered reveal (Intersection Observer)
  */
-async function init() {
-    setupEditLinks();
-    setupNav();
-
-    if (SHEET_ID === 'YOUR_SHEET_ID_HERE') {
-        Object.values(SHEETS).forEach(sheet => {
-            showError(sheet.tableId, 'スプレッドシートが未設定です');
-        });
-        return;
-    }
-
-    // 全シートを並行で読み込み
-    const loadSheet = async (key) => {
-        const sheet = SHEETS[key];
-        try {
-            const data = await fetchSheetData(sheet.name);
-            renderTable(sheet.tableId, data);
-            if (key === 'accounting') {
-                renderAccountingTotal(data);
+function setupReveal() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                observer.unobserve(entry.target);
             }
-        } catch (e) {
-            console.error(`${key} fetch error:`, e);
-            showError(sheet.tableId, 'データの読み込みに失敗しました');
-        }
-    };
+        });
+    }, { threshold: 0.15 });
 
-    await Promise.all(Object.keys(SHEETS).map(loadSheet));
+    document.querySelectorAll('[data-reveal]').forEach(el => observer.observe(el));
 }
 
-document.addEventListener('DOMContentLoaded', init);
+/**
+ * 初期化
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    setupPasswordGate();
+    setupNav();
+    setupReveal();
+});
