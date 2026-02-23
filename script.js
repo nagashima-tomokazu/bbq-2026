@@ -9,10 +9,10 @@ const SHEET_ID = '1EpZ8VKSUcbzEaZX85rJaM_I78INISpz9u-62EtKX4Ow';
 // シート名（Googleスプレッドシートのタブ名と一致させる）
 const SHEETS = {
     members:    { name: '参加者',       tableId: 'members-table',    linkId: 'members-edit-link',    gid: '0' },
-    potluck:    { name: '持ち寄り',     tableId: 'potluck-table',    linkId: 'potluck-edit-link',    gid: '1' },
-    shopping:   { name: '買い出し',     tableId: 'shopping-table',   linkId: 'shopping-edit-link',   gid: '2' },
-    supplies:   { name: '用意するもの', tableId: 'supplies-table',   linkId: 'supplies-edit-link',   gid: '3' },
-    accounting: { name: '会計',         tableId: 'accounting-table', linkId: 'accounting-edit-link', gid: '4' },
+    potluck:    { name: '持ち寄り',     tableId: 'potluck-table',    linkId: 'potluck-edit-link',    gid: '357540464' },
+    shopping:   { name: '買い出し',     tableId: 'shopping-table',   linkId: 'shopping-edit-link',   gid: '2034131953' },
+    supplies:   { name: '用意するもの', tableId: 'supplies-table',   linkId: 'supplies-edit-link',   gid: '2010623614' },
+    accounting: { name: '会計',         tableId: 'accounting-table', linkId: 'accounting-edit-link', gid: '1746162616' },
 };
 // ================================
 
@@ -151,12 +151,10 @@ function renderAccountingTotal(data) {
  * スプレッドシート編集リンクを設定する
  */
 function setupEditLinks() {
-    const editUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?usp=sharing`;
-
     Object.values(SHEETS).forEach(sheet => {
         const link = document.getElementById(sheet.linkId);
         if (link) {
-            link.href = editUrl;
+            link.href = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit#gid=${sheet.gid}`;
         }
     });
 }
