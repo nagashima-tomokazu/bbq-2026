@@ -4,7 +4,7 @@
 
 // ============ CONFIG ============
 // Google Spreadsheet ID (URLの /d/ と /edit の間の部分)
-const SHEET_ID = 'YOUR_SHEET_ID_HERE';
+const SHEET_ID = '1EpZ8VKSUcbzEaZX85rJaM_I78INISpz9u-62EtKX4Ow';
 
 // シート名（Googleスプレッドシートのタブ名と一致させる）
 const SHEETS = {
