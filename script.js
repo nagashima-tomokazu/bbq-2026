@@ -151,12 +151,12 @@ function renderAccountingTotal(data) {
  * スプレッドシート編集リンクを設定する
  */
 function setupEditLinks() {
-    const editBaseUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;
+    const editUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?usp=sharing`;
 
     Object.values(SHEETS).forEach(sheet => {
         const link = document.getElementById(sheet.linkId);
         if (link) {
-            link.href = `${editBaseUrl}#gid=${sheet.gid}`;
+            link.href = editUrl;
         }
     });
 }
