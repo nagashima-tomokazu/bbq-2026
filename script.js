@@ -6,9 +6,14 @@
 // Google Spreadsheet ID (URLの /d/ と /edit の間の部分)
 const SHEET_ID = 'YOUR_SHEET_ID_HERE';
 
-// シート名
-const POTLUCK_SHEET = '持ち寄りリスト';
-const SHOPPING_SHEET = '買い物リスト';
+// シート名（Googleスプレッドシートのタブ名と一致させる）
+const SHEETS = {
+    members:    { name: '参加者',       tableId: 'members-table',    linkId: 'members-edit-link',    gid: '0' },
+    potluck:    { name: '持ち寄り',     tableId: 'potluck-table',    linkId: 'potluck-edit-link',    gid: '1' },
+    shopping:   { name: '買い出し',     tableId: 'shopping-table',   linkId: 'shopping-edit-link',   gid: '2' },
+    supplies:   { name: '用意するもの', tableId: 'supplies-table',   linkId: 'supplies-edit-link',   gid: '3' },
+    accounting: { name: '会計',         tableId: 'accounting-table', linkId: 'accounting-edit-link', gid: '4' },
+};
 // ================================
 
 /**
@@ -67,7 +72,6 @@ function parseCSV(csv) {
         }
     }
 
-    // Last row
     if (current !== '' || row.length > 0) {
         row.push(current.trim());
         if (row.some(cell => cell !== '')) {
@@ -83,13 +87,14 @@ function parseCSV(csv) {
  */
 function renderTable(tableId, data) {
     const table = document.getElementById(tableId);
+    if (!table) return;
     const tbody = table.querySelector('tbody');
+    const headerRow = table.querySelector('thead tr');
+    const colCount = headerRow ? headerRow.children.length : 3;
 
-    // ヘッダー行をスキップ（1行目はカラム名）
     const dataRows = data.slice(1);
 
     if (dataRows.length === 0) {
-        const colCount = table.querySelector('thead tr').children.length;
         tbody.innerHTML = `<tr><td colspan="${colCount}" class="no-data">まだデータがありません</td></tr>`;
         return;
     }
@@ -98,28 +103,62 @@ function renderTable(tableId, data) {
 
     dataRows.forEach(row => {
         const tr = document.createElement('tr');
-        const headerCols = table.querySelector('thead tr').children.length;
-
-        for (let i = 0; i < headerCols; i++) {
+        for (let i = 0; i < colCount; i++) {
             const td = document.createElement('td');
-            td.textContent = row[i] || '';
+            const val = row[i] || '';
+            td.textContent = val;
+
+            // Status styling
+            if (val === '完了' || val === '済') {
+                td.classList.add('status-done');
+            } else if (val === '未着手' || val === '未') {
+                td.classList.add('status-pending');
+            } else if (val === '参加' || val === 'OK') {
+                td.classList.add('status-ok');
+            } else if (val === '不参加' || val === 'NG') {
+                td.classList.add('status-ng');
+            }
+
             tr.appendChild(td);
         }
         tbody.appendChild(tr);
     });
+
+    return dataRows;
+}
+
+/**
+ * 会計の合計を計算して表示する
+ */
+function renderAccountingTotal(data) {
+    const dataRows = data.slice(1);
+    let total = 0;
+
+    dataRows.forEach(row => {
+        const amount = parseInt((row[1] || '0').replace(/[^0-9]/g, ''), 10);
+        if (!isNaN(amount)) total += amount;
+    });
+
+    const totalBox = document.getElementById('accounting-total');
+    const totalAmount = document.getElementById('total-amount');
+    if (totalBox && totalAmount && total > 0) {
+        totalAmount.textContent = total.toLocaleString();
+        totalBox.style.display = 'block';
+    }
 }
 
 /**
  * スプレッドシート編集リンクを設定する
  */
 function setupEditLinks() {
-    const editUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;
+    const editBaseUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;
 
-    const potluckLink = document.getElementById('potluck-edit-link');
-    const shoppingLink = document.getElementById('shopping-edit-link');
-
-    if (potluckLink) potluckLink.href = editUrl + '#gid=0';
-    if (shoppingLink) shoppingLink.href = editUrl + '#gid=1';
+    Object.values(SHEETS).forEach(sheet => {
+        const link = document.getElementById(sheet.linkId);
+        if (link) {
+            link.href = `${editBaseUrl}#gid=${sheet.gid}`;
+        }
+    });
 }
 
 /**
@@ -127,9 +166,46 @@ function setupEditLinks() {
  */
 function showError(tableId, message) {
     const table = document.getElementById(tableId);
+    if (!table) return;
     const tbody = table.querySelector('tbody');
-    const colCount = table.querySelector('thead tr').children.length;
+    const headerRow = table.querySelector('thead tr');
+    const colCount = headerRow ? headerRow.children.length : 3;
     tbody.innerHTML = `<tr><td colspan="${colCount}" class="no-data">${message}</td></tr>`;
+}
+
+/**
+ * Smooth scroll for nav links
+ */
+function setupNav() {
+    document.querySelectorAll('.nav a').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const target = document.querySelector(link.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    // Highlight active nav on scroll
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav a');
+
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const top = section.offsetTop - 80;
+            if (window.scrollY >= top) {
+                current = section.getAttribute('id');
+            }
+        });
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === `#${current}`) {
+                link.classList.add('active');
+            }
+        });
+    });
 }
 
 /**
@@ -137,30 +213,31 @@ function showError(tableId, message) {
  */
 async function init() {
     setupEditLinks();
+    setupNav();
 
     if (SHEET_ID === 'YOUR_SHEET_ID_HERE') {
-        showError('potluck-table', 'スプレッドシートが未設定です');
-        showError('shopping-table', 'スプレッドシートが未設定です');
+        Object.values(SHEETS).forEach(sheet => {
+            showError(sheet.tableId, 'スプレッドシートが未設定です');
+        });
         return;
     }
 
-    // 持ち寄りリスト読み込み
-    try {
-        const potluckData = await fetchSheetData(POTLUCK_SHEET);
-        renderTable('potluck-table', potluckData);
-    } catch (e) {
-        console.error('Potluck fetch error:', e);
-        showError('potluck-table', 'データの読み込みに失敗しました');
-    }
+    // 全シートを並行で読み込み
+    const loadSheet = async (key) => {
+        const sheet = SHEETS[key];
+        try {
+            const data = await fetchSheetData(sheet.name);
+            renderTable(sheet.tableId, data);
+            if (key === 'accounting') {
+                renderAccountingTotal(data);
+            }
+        } catch (e) {
+            console.error(`${key} fetch error:`, e);
+            showError(sheet.tableId, 'データの読み込みに失敗しました');
+        }
+    };
 
-    // 買い物リスト読み込み
-    try {
-        const shoppingData = await fetchSheetData(SHOPPING_SHEET);
-        renderTable('shopping-table', shoppingData);
-    } catch (e) {
-        console.error('Shopping fetch error:', e);
-        showError('shopping-table', 'データの読み込みに失敗しました');
-    }
+    await Promise.all(Object.keys(SHEETS).map(loadSheet));
 }
 
 document.addEventListener('DOMContentLoaded', init);

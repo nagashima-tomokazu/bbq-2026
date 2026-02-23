@@ -6,7 +6,7 @@
     <title>BBQ 2026 - GW Outdoor Party</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -23,9 +23,20 @@
     </div>
 </header>
 
+<!-- Nav -->
+<nav class="nav">
+    <a href="#info">Info</a>
+    <a href="#members">Members</a>
+    <a href="#schedule">Schedule</a>
+    <a href="#potluck">Potluck</a>
+    <a href="#shopping">Shopping</a>
+    <a href="#supplies">Supplies</a>
+    <a href="#accounting">Accounting</a>
+</nav>
+
 <!-- Event Info -->
 <section class="section" id="info">
-    <h2 class="section-title">Event Info</h2>
+    <h2 class="section-title">&#127774; Event Info</h2>
     <div class="info-grid">
         <div class="info-card">
             <div class="info-icon">&#128197;</div>
@@ -47,13 +58,87 @@
             <div class="info-label">Fee</div>
             <div class="info-value">TBD</div>
         </div>
+        <div class="info-card">
+            <div class="info-icon">&#128101;</div>
+            <div class="info-label">Capacity</div>
+            <div class="info-value">6〜10人</div>
+        </div>
+        <div class="info-card">
+            <div class="info-icon">&#127958;</div>
+            <div class="info-label">Equipment</div>
+            <div class="info-value">TBD</div>
+        </div>
+    </div>
+</section>
+
+<!-- Members -->
+<section class="section section-warm" id="members">
+    <h2 class="section-title">&#128101; Members</h2>
+    <p class="section-desc">参加者一覧</p>
+    <div class="sheet-link-box">
+        <a href="#" id="members-edit-link" class="btn-edit" target="_blank" rel="noopener">
+            &#9998; 参加登録・編集する
+        </a>
+    </div>
+    <div class="table-wrap">
+        <table id="members-table" class="table-members">
+            <thead>
+                <tr><th>名前</th><th>参加</th><th>メモ</th></tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="3" class="loading">読み込み中...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Schedule -->
+<section class="section" id="schedule">
+    <h2 class="section-title">&#128336; Time Schedule</h2>
+    <p class="section-desc">当日のスケジュール</p>
+    <div class="timeline">
+        <div class="timeline-item">
+            <div class="timeline-time">TBD</div>
+            <div class="timeline-detail">
+                <div class="timeline-text">買い出し集合</div>
+                <div class="timeline-note">買い出し係のみ</div>
+            </div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-time">TBD</div>
+            <div class="timeline-detail">
+                <div class="timeline-text">全員集合</div>
+                <div class="timeline-note">現地に集合</div>
+            </div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-time">TBD</div>
+            <div class="timeline-detail">
+                <div class="timeline-text">受付・準備 &#128293;</div>
+                <div class="timeline-note">火起こし、テーブルセッティング</div>
+            </div>
+        </div>
+        <div class="timeline-item highlight">
+            <div class="timeline-time">TBD</div>
+            <div class="timeline-detail">
+                <div class="timeline-text">BBQ START &#127830;&#127846;</div>
+                <div class="timeline-note">肉！野菜！乾杯！</div>
+            </div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-time">TBD</div>
+            <div class="timeline-detail">
+                <div class="timeline-text">片付け</div>
+                <div class="timeline-note">みんなで手分けして撤収</div>
+            </div>
+        </div>
     </div>
 </section>
 
 <!-- Potluck List -->
-<section class="section section-alt" id="potluck">
-    <h2 class="section-title">Potluck List</h2>
-    <p class="section-desc">&#127834; みんなの持ち寄りリスト &#8212; スプレッドシートから自由に追加・編集できます</p>
+<section class="section section-warm" id="potluck">
+    <h2 class="section-title">&#127834; Potluck List</h2>
+    <p class="section-desc">みんなの持ち寄りリスト &mdash; 持っていけるものがあれば追加してください！</p>
     <div class="sheet-link-box">
         <a href="#" id="potluck-edit-link" class="btn-edit" target="_blank" rel="noopener">
             &#9998; スプレッドシートで編集する
@@ -73,8 +158,8 @@
 
 <!-- Shopping List -->
 <section class="section" id="shopping">
-    <h2 class="section-title">Shopping List</h2>
-    <p class="section-desc">&#128722; 買い出しリスト &#8212; 必要なものを追加してください</p>
+    <h2 class="section-title">&#128722; Shopping List</h2>
+    <p class="section-desc">買い出しリスト &mdash; 当日買い出し係が購入します</p>
     <div class="sheet-link-box">
         <a href="#" id="shopping-edit-link" class="btn-edit" target="_blank" rel="noopener">
             &#9998; スプレッドシートで編集する
@@ -92,43 +177,55 @@
     </div>
 </section>
 
-<!-- Schedule -->
-<section class="section section-alt" id="schedule">
-    <h2 class="section-title">Time Schedule</h2>
-    <p class="section-desc">&#127775; 当日のスケジュール</p>
-    <div class="timeline">
-        <div class="timeline-item">
-            <div class="timeline-time">TBD</div>
-            <div class="timeline-text">集合・準備開始</div>
-        </div>
-        <div class="timeline-item">
-            <div class="timeline-time">TBD</div>
-            <div class="timeline-text">火起こし・調理スタート &#128293;</div>
-        </div>
-        <div class="timeline-item">
-            <div class="timeline-time">TBD</div>
-            <div class="timeline-text">みんなで食事 &#127830;</div>
-        </div>
-        <div class="timeline-item">
-            <div class="timeline-time">TBD</div>
-            <div class="timeline-text">片付け・撤収 &#128075;</div>
-        </div>
+<!-- Supplies -->
+<section class="section section-warm" id="supplies">
+    <h2 class="section-title">&#129520; Supplies</h2>
+    <p class="section-desc">用意するもの &mdash; 機材・消耗品のチェックリスト</p>
+    <div class="sheet-link-box">
+        <a href="#" id="supplies-edit-link" class="btn-edit" target="_blank" rel="noopener">
+            &#9998; スプレッドシートで編集する
+        </a>
+    </div>
+    <div class="table-wrap">
+        <table id="supplies-table">
+            <thead>
+                <tr><th>品目</th><th>チェック</th><th>備考</th></tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="3" class="loading">読み込み中...</td></tr>
+            </tbody>
+        </table>
     </div>
 </section>
 
-<!-- Checklist -->
-<section class="section" id="checklist">
-    <h2 class="section-title">Bring List</h2>
-    <p class="section-desc">&#127890; 各自の持ち物チェックリスト</p>
-    <ul class="checklist">
-        <li>TBD</li>
-    </ul>
+<!-- Accounting -->
+<section class="section" id="accounting">
+    <h2 class="section-title">&#128176; Accounting</h2>
+    <p class="section-desc">会計表 &mdash; 費用と精算状況</p>
+    <div class="sheet-link-box">
+        <a href="#" id="accounting-edit-link" class="btn-edit" target="_blank" rel="noopener">
+            &#9998; スプレッドシートで編集する
+        </a>
+    </div>
+    <div class="table-wrap">
+        <table id="accounting-table">
+            <thead>
+                <tr><th>タイトル</th><th>金額(円)</th><th>担当</th><th>精算</th></tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="4" class="loading">読み込み中...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="accounting-total" class="total-box" style="display:none;">
+        合計: <span id="total-amount">-</span> 円
+    </div>
 </section>
 
 <!-- Access -->
-<section class="section section-alt" id="access">
-    <h2 class="section-title">Access</h2>
-    <p class="section-desc">&#128663; アクセス情報</p>
+<section class="section section-warm" id="access">
+    <h2 class="section-title">&#128663; Access</h2>
+    <p class="section-desc">アクセス情報</p>
     <div class="access-info">
         <p>TBD</p>
     </div>
@@ -136,7 +233,7 @@
 
 <!-- Footer -->
 <footer class="footer">
-    <p>&#127796; BBQ 2026 &#8212; Have a great GW! &#127796;</p>
+    <p>&#127796; BBQ 2026 &mdash; Have a great GW! &#127796;</p>
 </footer>
 
 <script src="script.js"></script>
