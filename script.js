@@ -3,7 +3,7 @@
    ======================================== */
 
 // SHA-256 hash of the password (password itself is NOT stored)
-const PASSWORD_HASH = '8d12acea74abf594f96f7b5dfdb77a6c9df91d0a372653a8891ca0ba84050765';
+const PASSWORD_HASH = 'c30ba7b24076f8bdf939a7ef1da78d2f299d71ad4b8d6a37c8b23df407d9bd19';
 
 /**
  * SHA-256ハッシュを計算する (Web Crypto API)
